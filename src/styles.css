@@ -1,0 +1,102 @@
+body {
+  margin: 0;
+  font-family: system-ui, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+  background: #f4f6f8;
+  color: #222;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin-top: 0;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.status {
+  color: #1976d2;
+}
+
+.error {
+  color: #d32f2f;
+}
+
+.empty {
+  color: #777;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.chart-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+}
+
+.chart-box {
+  width: 320px;
+  max-width: 100%;
+}
+
+.chart-box.wide {
+  width: 100%;
+}
+
+.summary {
+  flex: 1;
+  min-width: 240px;
+}
+
+.summary .total td {
+  font-weight: bold;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+button.link {
+  background: none;
+  border: none;
+  color: #d32f2f;
+  cursor: pointer;
+}

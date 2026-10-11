@@ -1,0 +1,27 @@
+{
+  "name": "kakeibo-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n server,client \"npm:server\" \"npm:client\"",
+    "server": "node server/index.js",
+    "client": "vite",
+    "build": "vite build",
+    "start": "npm run build && node server/index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.40.0",
+    "chart.js": "^4.4.7",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "react": "^18.3.1",
+    "react-chartjs-2": "^5.3.0",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "vite": "^6.0.7"
+  }
+}
