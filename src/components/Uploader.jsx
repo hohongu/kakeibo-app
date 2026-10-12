@@ -6,10 +6,12 @@ export default function Uploader({ onAnalyzed }) {
   const inputRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // ドラッグ中かどうか（ドロップ領域のハイライト用）
+  const [dragging, setDragging] = useState(false);
 
-  async function handleChange(e) {
-    const files = Array.from(e.target.files ?? []);
-    if (files.length === 0) return;
+  // 選択またはドロップされたファイルを順番に解析する
+  async function processFiles(files) {
+    if (files.length === 0 || loading) return;
 
     setLoading(true);
     setError('');
@@ -38,8 +40,28 @@ export default function Uploader({ onAnalyzed }) {
     if (inputRef.current) inputRef.current.value = '';
   }
 
+  function handleChange(e) {
+    processFiles(Array.from(e.target.files ?? []));
+  }
+
+  // カード全体をドロップ領域にする（画像以外のファイルは無視する）
+  function handleDrop(e) {
+    e.preventDefault();
+    setDragging(false);
+    const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith('image/'));
+    processFiles(files);
+  }
+
   return (
-    <section className="card">
+    <section
+      className={dragging ? 'card dropzone dragging' : 'card dropzone'}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragging(true);
+      }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={handleDrop}
+    >
       <h2>レシートを読み込む</h2>
       <input
         ref={inputRef}

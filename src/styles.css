@@ -121,3 +121,13 @@ button.link {
 .negative {
   color: #d32f2f;
 }
+
+/* レシート読み込みのドロップ領域（カード全体をドロップ先にするため高さを確保） */
+.dropzone {
+  min-height: 180px;
+  box-sizing: border-box;
+}
+
+.dropzone.dragging {
+  background: #e3f2fd;
+}
