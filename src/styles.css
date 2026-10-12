@@ -164,7 +164,7 @@ td.dup {
   text-align: center;
 }
 
-/* 円グラフは標準(320px)の8割のサイズにする */
+/* 円グラフのサイズ（凡例を消したため、凡例ありの円の直径約280pxの8割にあたる224px） */
 .chart-box.pie {
-  width: 256px;
+  width: 224px;
 }
