@@ -84,6 +84,8 @@ td {
 
 .summary .total td {
   font-weight: bold;
+  border-top: 2px solid #eee;
+  border-bottom: none;
 }
 
 .dot {
