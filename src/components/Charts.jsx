@@ -92,7 +92,11 @@ export function MonthlyChart({ entries }) {
     <section className="card">
       <h2>月別支出</h2>
       <div className="chart-box wide">
-        <Bar data={barData} options={{ plugins: { legend: { display: false } } }} />
+        {/* 縦横比は標準(2)の高さを7割にするため 2 / 0.7 とする */}
+        <Bar
+          data={barData}
+          options={{ aspectRatio: 2 / 0.7, plugins: { legend: { display: false } } }}
+        />
       </div>
     </section>
   );
