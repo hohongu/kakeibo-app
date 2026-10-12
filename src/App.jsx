@@ -70,6 +70,13 @@ export default function App() {
     setEntries((prev) => prev.filter((e) => e.id !== id));
   }
 
+  // 全明細を削除する（関連する警告も消す）
+  function handleDeleteAll() {
+    entriesRef.current = [];
+    setEntries([]);
+    setWarnings([]);
+  }
+
   // 重複を削除した後などに、現在の明細で警告を再判定する
   function handleRecheck(warning) {
     const own = entries.filter((e) => e.receiptId === warning.receiptId);
@@ -133,6 +140,7 @@ export default function App() {
         entries={entries}
         onChangeCategory={handleChangeCategory}
         onDelete={handleDelete}
+        onDeleteAll={handleDeleteAll}
       />
     </main>
   );

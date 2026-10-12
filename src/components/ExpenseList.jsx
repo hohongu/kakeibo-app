@@ -1,11 +1,18 @@
 import { CATEGORIES } from '../categories.js';
 
 // 登録済みの明細一覧（カテゴリの修正・削除が可能）
-export default function ExpenseList({ entries, onChangeCategory, onDelete }) {
+export default function ExpenseList({ entries, onChangeCategory, onDelete, onDeleteAll }) {
   const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date));
   // 重複相手がまだ残っている明細（2番目に登録された側）を太字にする
   const ids = new Set(entries.map((e) => e.id));
   const isDuplicate = (e) => Boolean(e.duplicateOf) && ids.has(e.duplicateOf);
+
+  // 全削除は取り消せないため、確認してから実行する
+  function handleDeleteAll() {
+    if (window.confirm(`明細${entries.length}件をすべて削除します。元に戻せません。よろしいですか？`)) {
+      onDeleteAll();
+    }
+  }
 
   return (
     <section className="card">
@@ -22,7 +29,11 @@ export default function ExpenseList({ entries, onChangeCategory, onDelete }) {
                 <th>商品名</th>
                 <th className="num">金額</th>
                 <th>カテゴリ</th>
-                <th></th>
+                <th>
+                  <button className="link" onClick={handleDeleteAll}>
+                    全削除
+                  </button>
+                </th>
               </tr>
             </thead>
             <tbody>
