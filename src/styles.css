@@ -153,3 +153,8 @@ button.link {
 button.recheck {
   cursor: pointer;
 }
+
+/* 重複した明細（2番目に登録された側）の日付・店名・商品名を太字にする */
+td.dup {
+  font-weight: bold;
+}

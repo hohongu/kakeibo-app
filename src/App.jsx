@@ -25,7 +25,7 @@ export default function App() {
   // 読み取り結果を検証し、明細として追加する（警告があっても登録はする）
   function handleAnalyzed({ store, date, items }, fileName) {
     const receiptId = crypto.randomUUID();
-    const { warnings: messages, targetIds } = validateReceipt(
+    const { warnings: messages, targetIds, pairs } = validateReceipt(
       { store, date, items },
       entriesRef.current
     );
@@ -46,13 +46,17 @@ export default function App() {
       ]);
     }
 
+    // 重複した明細には、重複相手の登録済み明細のIDを記録する（一覧で太字表示するため）
+    const duplicateOf = new Map(pairs.map((p) => [p.index, p.targetId]));
+
     const receiptDate = date || today();
-    const added = items.map((item) => ({
+    const added = items.map((item, index) => ({
       id: crypto.randomUUID(),
       receiptId,
       date: receiptDate,
       store,
       ...item,
+      ...(duplicateOf.has(index) ? { duplicateOf: duplicateOf.get(index) } : {}),
     }));
     entriesRef.current = [...entriesRef.current, ...added];
     setEntries(entriesRef.current);

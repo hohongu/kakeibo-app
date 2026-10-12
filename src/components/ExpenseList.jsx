@@ -3,6 +3,9 @@ import { CATEGORIES } from '../categories.js';
 // 登録済みの明細一覧（カテゴリの修正・削除が可能）
 export default function ExpenseList({ entries, onChangeCategory, onDelete }) {
   const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date));
+  // 重複相手がまだ残っている明細（2番目に登録された側）を太字にする
+  const ids = new Set(entries.map((e) => e.id));
+  const isDuplicate = (e) => Boolean(e.duplicateOf) && ids.has(e.duplicateOf);
 
   return (
     <section className="card">
@@ -25,9 +28,9 @@ export default function ExpenseList({ entries, onChangeCategory, onDelete }) {
             <tbody>
               {sorted.map((e) => (
                 <tr key={e.id}>
-                  <td>{e.date}</td>
-                  <td>{e.store}</td>
-                  <td>{e.name}</td>
+                  <td className={isDuplicate(e) ? 'dup' : ''}>{e.date}</td>
+                  <td className={isDuplicate(e) ? 'dup' : ''}>{e.store}</td>
+                  <td className={isDuplicate(e) ? 'dup' : ''}>{e.name}</td>
                   <td className={e.amount < 0 ? 'num negative' : 'num'}>
                     {e.amount < 0 ? '-' : ''}¥{Math.abs(e.amount).toLocaleString()}
                   </td>

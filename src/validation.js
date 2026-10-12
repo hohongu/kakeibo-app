@@ -13,7 +13,8 @@ function groupByReceipt(entries) {
 
 // 新しいレシートの明細のうち、登録済み明細と金額が一致するものを探す
 // （商品名はOCRで読み取りごとに揺れるため金額で照合し、登録済みの1件には1回だけ対応させる）
-// 戻り値: { matched: 一致した新しい明細の配列, targetIds: 対応した登録済み明細のID配列 }
+// 戻り値: { matched: 一致した新しい明細の配列, targetIds: 対応した登録済み明細のID配列,
+//          pairs: [{ index: 新しい明細の位置, targetId: 対応した登録済み明細のID }] }
 function matchItems(items, candidateEntries) {
   const pool = new Map(); // 金額 -> 未対応の登録済み明細IDの配列
   for (const e of candidateEntries) {
@@ -22,14 +23,17 @@ function matchItems(items, candidateEntries) {
 
   const matched = [];
   const targetIds = [];
-  for (const item of items) {
+  const pairs = [];
+  items.forEach((item, index) => {
     const ids = pool.get(item.amount);
     if (ids && ids.length > 0) {
-      targetIds.push(ids.shift());
+      const targetId = ids.shift();
+      targetIds.push(targetId);
       matched.push(item);
+      pairs.push({ index, targetId });
     }
-  }
-  return { matched, targetIds };
+  });
+  return { matched, targetIds, pairs };
 }
 
 // 日付・合計金額の一致、または旧データとの金額の包含による重複を探す（重複なしなら null）
@@ -80,11 +84,14 @@ function duplicateDetail(items, matched) {
 
 // 読み取ったレシートを検証する（登録自体は止めない）
 // receipt: { store, date(読み取れなければnull), items }
-// 戻り値: { warnings: 警告メッセージの配列, targetIds: 重複した登録済み明細のID配列 }
+// 戻り値: { warnings: 警告メッセージの配列, targetIds: 重複した登録済み明細のID配列,
+//          pairs: [{ index: 新しい明細の位置, targetId }] }
 //   targetIds は「再確認」で、一部だけ削除された場合の判定に使う
+//   pairs は、重複した明細に「どの登録済み明細と重複か」を記録するために使う
 export function validateReceipt(receipt, existingEntries) {
   const warnings = negativeWarnings(receipt.items);
   let targetIds = [];
+  let pairs = [];
 
   // 重複レシート（日付が読み取れた場合のみ判定）
   if (receipt.date && receipt.items.length > 0) {
@@ -97,10 +104,11 @@ export function validateReceipt(receipt, existingEntries) {
           `（${duplicateDetail(receipt.items, dup.matched)}）`
       );
       targetIds = dup.targetIds;
+      pairs = dup.pairs;
     }
   }
 
-  return { warnings, targetIds };
+  return { warnings, targetIds, pairs };
 }
 
 // 削除などの後に、現在の明細で警告を再判定する
