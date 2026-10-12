@@ -3,7 +3,7 @@ import Charts from './components/Charts.jsx';
 import ExpenseList from './components/ExpenseList.jsx';
 import Uploader from './components/Uploader.jsx';
 import { useLocalStorage } from './useLocalStorage.js';
-import { validateReceipt } from './validation.js';
+import { recheckReceipt, validateReceipt } from './validation.js';
 
 // 今日の日付を YYYY-MM-DD で返す（レシートに日付がない場合の代替）
 function today() {
@@ -15,7 +15,7 @@ function today() {
 export default function App() {
   // 明細データはローカルストレージに保存される
   const [entries, setEntries] = useLocalStorage('kakeibo-entries', []);
-  // 検証で見つかった警告 [{ id, fileName, receiptId, date, messages, resolved }]
+  // 検証で見つかった警告 [{ id, fileName, receiptId, date, messages, targetIds, resolved }]
   const [warnings, setWarnings] = useState([]);
 
   // 複数枚を続けて処理しても最新の明細で重複判定できるよう、refで保持する
@@ -25,12 +25,24 @@ export default function App() {
   // 読み取り結果を検証し、明細として追加する（警告があっても登録はする）
   function handleAnalyzed({ store, date, items }, fileName) {
     const receiptId = crypto.randomUUID();
-    const messages = validateReceipt({ store, date, items }, entriesRef.current);
+    const { warnings: messages, targetIds } = validateReceipt(
+      { store, date, items },
+      entriesRef.current
+    );
     if (messages.length > 0) {
       // date は読み取り結果のまま（null可）を保持し、再確認でも同じ条件で判定する
+      // targetIds は重複していた登録済み明細のID（一部削除後の再確認に使う）
       setWarnings((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), fileName, receiptId, date, messages, resolved: false },
+        {
+          id: crypto.randomUUID(),
+          fileName,
+          receiptId,
+          date,
+          messages,
+          targetIds,
+          resolved: false,
+        },
       ]);
     }
 
@@ -57,24 +69,21 @@ export default function App() {
   // 重複を削除した後などに、現在の明細で警告を再判定する
   function handleRecheck(warning) {
     const own = entries.filter((e) => e.receiptId === warning.receiptId);
-    let messages = [];
-
-    // このレシートの明細が残っていれば、他の明細と照合し直す
-    if (own.length > 0) {
-      const receipt = {
-        store: own[0].store,
-        date: warning.date,
-        items: own.map(({ name, amount, category }) => ({ name, amount, category })),
-      };
-      const others = entries.filter((e) => e.receiptId !== warning.receiptId);
-      messages = validateReceipt(receipt, others);
-    }
+    const others = entries.filter((e) => e.receiptId !== warning.receiptId);
+    const receipt = {
+      store: own[0]?.store ?? '',
+      date: warning.date,
+      items: own.map(({ name, amount, category }) => ({ name, amount, category })),
+    };
+    const result = recheckReceipt(receipt, others, warning.targetIds ?? []);
 
     setWarnings((prev) =>
       prev.map((w) =>
-        w.id === warning.id
-          ? { ...w, messages: messages.length > 0 ? messages : w.messages, resolved: messages.length === 0 }
-          : w
+        w.id !== warning.id
+          ? w
+          : result.warnings.length > 0
+            ? { ...w, messages: result.warnings, targetIds: result.targetIds, resolved: false }
+            : { ...w, resolved: true }
       )
     );
   }
