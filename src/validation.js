@@ -1,12 +1,11 @@
-// 登録済み明細をレシート単位にまとめ、{ レシートキー: { date, total } } を返す
-// receiptId を持たない旧データは、同じ日付・店名の明細を1枚のレシートとして扱う
+// receiptId を持つ登録済み明細をレシート単位にまとめ、[{ date, total }] を返す
 function groupByReceipt(entries) {
   const receipts = new Map();
   for (const e of entries) {
-    const key = e.receiptId ?? `legacy:${e.date}:${e.store}`;
-    const receipt = receipts.get(key) ?? { date: e.date, store: e.store, total: 0 };
+    if (!e.receiptId) continue;
+    const receipt = receipts.get(e.receiptId) ?? { date: e.date, total: 0 };
     receipt.total += e.amount;
-    receipts.set(key, receipt);
+    receipts.set(e.receiptId, receipt);
   }
   return [...receipts.values()];
 }
@@ -29,9 +28,20 @@ export function validateReceipt(receipt, existingEntries) {
   // 同一の日付・合計金額のレシートが既にある場合（日付が読み取れた場合のみ判定）
   if (receipt.date) {
     const total = receipt.items.reduce((sum, item) => sum + item.amount, 0);
-    const duplicated = groupByReceipt(existingEntries).some(
+    const sameTotal = groupByReceipt(existingEntries).some(
       (r) => r.date === receipt.date && r.total === total
     );
+    // receiptId を持たない旧データはレシート単位に分けられないため、
+    // 同じ日付に同じ商品名・金額の明細がすべて存在するかで判定する
+    const legacy = existingEntries.filter((e) => !e.receiptId);
+    const sameItems =
+      receipt.items.length > 0 &&
+      receipt.items.every((item) =>
+        legacy.some(
+          (e) => e.date === receipt.date && e.name === item.name && e.amount === item.amount
+        )
+      );
+    const duplicated = sameTotal || sameItems;
     if (duplicated) {
       warnings.push(
         `同じ日付（${receipt.date}）・合計金額（¥${total.toLocaleString()}）のレシートが` +
