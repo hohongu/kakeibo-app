@@ -124,7 +124,7 @@ button.link {
 
 /* レシート読み込みのドロップ領域（カード全体をドロップ先にするため高さを確保） */
 .dropzone {
-  min-height: 180px;
+  min-height: 90px;
   box-sizing: border-box;
 }
 
