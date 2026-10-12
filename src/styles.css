@@ -163,3 +163,8 @@ td.dup {
 .center {
   text-align: center;
 }
+
+/* 円グラフは標準(320px)の8割のサイズにする */
+.chart-box.pie {
+  width: 256px;
+}

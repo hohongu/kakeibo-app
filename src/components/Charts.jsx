@@ -58,7 +58,7 @@ export default function Charts({ entries }) {
       <section className="card">
         <h2>カテゴリ別集計</h2>
         <div className="chart-row">
-          <div className="chart-box">
+          <div className="chart-box pie">
             <Pie data={pieData} />
           </div>
           <table className="summary">
