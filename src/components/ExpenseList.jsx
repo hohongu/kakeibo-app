@@ -29,7 +29,7 @@ export default function ExpenseList({ entries, onChangeCategory, onDelete, onDel
                 <th>商品名</th>
                 <th className="num">金額</th>
                 <th>カテゴリ</th>
-                <th>
+                <th className="center">
                   <button className="link" onClick={handleDeleteAll}>
                     全削除
                   </button>
@@ -55,7 +55,7 @@ export default function ExpenseList({ entries, onChangeCategory, onDelete, onDel
                       ))}
                     </select>
                   </td>
-                  <td>
+                  <td className="center">
                     <button className="link" onClick={() => onDelete(e.id)}>
                       削除
                     </button>

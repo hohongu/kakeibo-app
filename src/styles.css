@@ -158,3 +158,8 @@ button.recheck {
 td.dup {
   font-weight: bold;
 }
+
+/* 削除列などを中央揃えにする */
+.center {
+  text-align: center;
+}
