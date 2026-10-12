@@ -169,3 +169,16 @@ td.dup {
 .chart-box.pie {
   width: 200px;
 }
+
+/* レシート読み込みとカテゴリ別集計を横に並べる（狭い画面では縦に折り返す） */
+.top-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.top-row > .card {
+  flex: 1 1 320px;
+  margin-bottom: 0;
+}

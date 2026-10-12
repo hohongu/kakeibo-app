@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import Charts from './components/Charts.jsx';
+import { CategorySummary, MonthlyChart } from './components/Charts.jsx';
 import ExpenseList from './components/ExpenseList.jsx';
 import Uploader from './components/Uploader.jsx';
 import { useLocalStorage } from './useLocalStorage.js';
@@ -106,7 +106,11 @@ export default function App() {
   return (
     <main className="container">
       <h1>レシート家計簿</h1>
-      <Uploader onAnalyzed={handleAnalyzed} />
+      {/* レシート読み込みとカテゴリ別集計を横に並べる */}
+      <div className="top-row">
+        <Uploader onAnalyzed={handleAnalyzed} />
+        <CategorySummary entries={entries} />
+      </div>
 
       {warnings.map((w) => (
         <div key={w.id} className={w.resolved ? 'warning resolved' : 'warning'} role="alert">
@@ -135,7 +139,7 @@ export default function App() {
         </div>
       ))}
 
-      <Charts entries={entries} />
+      <MonthlyChart entries={entries} />
       <ExpenseList
         entries={entries}
         onChangeCategory={handleChangeCategory}
