@@ -17,27 +17,19 @@ function countAmounts(amounts) {
   return counts;
 }
 
-// レシートIDを持たない旧データのうち、同じ日付・店名の明細の金額構成が
-// このレシートの k 回分と一致するものがあれば true
+// レシートIDを持たない旧データは、レシート単位に分けられず店名もOCRで揺れるため、
+// 同じ日付の旧データに、このレシートの金額がすべて（出現回数込みで）含まれるかで判定する
+// （商品名・店名は読み取りごとに揺れるため使わない。警告のみなので多少の誤検知は許容する）
 function matchesLegacyGroup(receipt, existingEntries) {
   if (receipt.items.length === 0) return false;
+
+  const legacyAmounts = existingEntries
+    .filter((e) => !e.receiptId && e.date === receipt.date)
+    .map((e) => e.amount);
+  const legacyCounts = countAmounts(legacyAmounts);
   const target = countAmounts(receipt.items.map((i) => i.amount));
 
-  const groups = new Map();
-  for (const e of existingEntries) {
-    if (e.receiptId || e.date !== receipt.date || e.store !== receipt.store) continue;
-    groups.set(e.store, [...(groups.get(e.store) ?? []), e.amount]);
-  }
-
-  return [...groups.values()].some((amounts) => {
-    const counts = countAmounts(amounts);
-    const k = amounts.length / receipt.items.length;
-    if (!Number.isInteger(k) || k < 1) return false;
-    return (
-      counts.size === target.size &&
-      [...target].every(([amount, n]) => counts.get(amount) === n * k)
-    );
-  });
+  return [...target].every(([amount, n]) => (legacyCounts.get(amount) ?? 0) >= n);
 }
 
 // 読み取ったレシートを検証し、警告メッセージの配列を返す（登録自体は止めない）
@@ -61,9 +53,7 @@ export function validateReceipt(receipt, existingEntries) {
     const sameTotal = groupByReceipt(existingEntries).some(
       (r) => r.date === receipt.date && r.total === total
     );
-    // receiptId を持たない旧データはレシート単位に分けられないため、
-    // 同じ日付・店名の明細の金額構成が、このレシートの k 回分（k>=1）と一致するかで判定する
-    // （商品名はOCRで読み取りごとに揺れるため、金額のみで比較する）
+    // receiptId を持たない旧データは金額構成で判定する
     const sameItems = matchesLegacyGroup(receipt, existingEntries);
     const duplicated = sameTotal || sameItems;
     if (duplicated) {
