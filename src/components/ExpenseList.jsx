@@ -28,7 +28,9 @@ export default function ExpenseList({ entries, onChangeCategory, onDelete }) {
                   <td>{e.date}</td>
                   <td>{e.store}</td>
                   <td>{e.name}</td>
-                  <td className="num">¥{e.amount.toLocaleString()}</td>
+                  <td className={e.amount < 0 ? 'num negative' : 'num'}>
+                    {e.amount < 0 ? '-' : ''}¥{Math.abs(e.amount).toLocaleString()}
+                  </td>
                   <td>
                     <select
                       value={e.category}

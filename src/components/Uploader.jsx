@@ -26,7 +26,7 @@ export default function Uploader({ onAnalyzed }) {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || '読み取りに失敗しました。');
-        onAnalyzed(data);
+        onAnalyzed(data, file.name);
       } catch (err) {
         failed.push(`${file.name}: ${err.message}`);
       }
