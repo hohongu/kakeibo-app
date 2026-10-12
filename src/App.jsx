@@ -15,7 +15,7 @@ function today() {
 export default function App() {
   // 明細データはローカルストレージに保存される
   const [entries, setEntries] = useLocalStorage('kakeibo-entries', []);
-  // 検証で見つかった警告 [{ id, fileName, messages }]
+  // 検証で見つかった警告 [{ id, fileName, receiptId, date, messages, resolved }]
   const [warnings, setWarnings] = useState([]);
 
   // 複数枚を続けて処理しても最新の明細で重複判定できるよう、refで保持する
@@ -24,12 +24,16 @@ export default function App() {
 
   // 読み取り結果を検証し、明細として追加する（警告があっても登録はする）
   function handleAnalyzed({ store, date, items }, fileName) {
+    const receiptId = crypto.randomUUID();
     const messages = validateReceipt({ store, date, items }, entriesRef.current);
     if (messages.length > 0) {
-      setWarnings((prev) => [...prev, { id: crypto.randomUUID(), fileName, messages }]);
+      // date は読み取り結果のまま（null可）を保持し、再確認でも同じ条件で判定する
+      setWarnings((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), fileName, receiptId, date, messages, resolved: false },
+      ]);
     }
 
-    const receiptId = crypto.randomUUID();
     const receiptDate = date || today();
     const added = items.map((item) => ({
       id: crypto.randomUUID(),
@@ -50,6 +54,31 @@ export default function App() {
     setEntries((prev) => prev.filter((e) => e.id !== id));
   }
 
+  // 重複を削除した後などに、現在の明細で警告を再判定する
+  function handleRecheck(warning) {
+    const own = entries.filter((e) => e.receiptId === warning.receiptId);
+    let messages = [];
+
+    // このレシートの明細が残っていれば、他の明細と照合し直す
+    if (own.length > 0) {
+      const receipt = {
+        store: own[0].store,
+        date: warning.date,
+        items: own.map(({ name, amount, category }) => ({ name, amount, category })),
+      };
+      const others = entries.filter((e) => e.receiptId !== warning.receiptId);
+      messages = validateReceipt(receipt, others);
+    }
+
+    setWarnings((prev) =>
+      prev.map((w) =>
+        w.id === warning.id
+          ? { ...w, messages: messages.length > 0 ? messages : w.messages, resolved: messages.length === 0 }
+          : w
+      )
+    );
+  }
+
   function dismissWarning(id) {
     setWarnings((prev) => prev.filter((w) => w.id !== id));
   }
@@ -60,18 +89,29 @@ export default function App() {
       <Uploader onAnalyzed={handleAnalyzed} />
 
       {warnings.map((w) => (
-        <div key={w.id} className="warning" role="alert">
+        <div key={w.id} className={w.resolved ? 'warning resolved' : 'warning'} role="alert">
           <div className="warning-body">
-            <strong>⚠ {w.fileName}</strong>
-            <ul>
-              {w.messages.map((m, i) => (
-                <li key={i}>{m}</li>
-              ))}
-            </ul>
+            <strong>{w.resolved ? '✓' : '⚠'} {w.fileName}</strong>
+            {w.resolved ? (
+              <p>警告の原因は解消されています。</p>
+            ) : (
+              <ul>
+                {w.messages.map((m, i) => (
+                  <li key={i}>{m}</li>
+                ))}
+              </ul>
+            )}
           </div>
-          <button className="link" onClick={() => dismissWarning(w.id)}>
-            閉じる
-          </button>
+          <div className="warning-actions">
+            {!w.resolved && (
+              <button className="recheck" onClick={() => handleRecheck(w)}>
+                再確認
+              </button>
+            )}
+            <button className="link" onClick={() => dismissWarning(w.id)}>
+              閉じる
+            </button>
+          </div>
         </div>
       ))}
 

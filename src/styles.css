@@ -131,3 +131,25 @@ button.link {
 .dropzone.dragging {
   background: #e3f2fd;
 }
+
+/* 警告の再確認ボタン・解消済み表示 */
+.warning-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.warning.resolved {
+  background: #e8f5e9;
+  border-color: #66bb6a;
+}
+
+.warning.resolved p {
+  margin: 4px 0 0;
+}
+
+button.recheck {
+  cursor: pointer;
+}
