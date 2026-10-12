@@ -88,9 +88,8 @@ td {
 
 .dot {
   display: inline-block;
-  width: 10px;
+  width: 16px;
   height: 10px;
-  border-radius: 50%;
   margin-right: 8px;
 }
 
