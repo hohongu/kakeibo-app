@@ -59,7 +59,7 @@ export default function Charts({ entries }) {
         <h2>カテゴリ別集計</h2>
         <div className="chart-row">
           <div className="chart-box pie">
-            <Pie data={pieData} />
+            <Pie data={pieData} options={{ plugins: { legend: { display: false } } }} />
           </div>
           <table className="summary">
             <tbody>
